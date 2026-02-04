@@ -1,15 +1,10 @@
 'use client';
 
 import { NDAFormData } from '@/types/nda';
+import { formatDate, getMndaTermText, getConfidentialityTermText } from '@/utils/nda';
 
 interface NDAPreviewProps {
   formData: NDAFormData;
-}
-
-function formatDate(dateString: string): string {
-  if (!dateString) return '___________';
-  const date = new Date(dateString + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function Placeholder({ value, fallback = '___________' }: { value: string; fallback?: string }) {
@@ -20,16 +15,53 @@ function Placeholder({ value, fallback = '___________' }: { value: string; fallb
   );
 }
 
-export function NDAPreview({ formData }: NDAPreviewProps) {
-  const mndaTerm =
-    formData.mndaTermType === 'expires'
-      ? `Expires ${formData.mndaTermYears} year(s) from Effective Date.`
-      : 'Continues until terminated in accordance with the terms of the MNDA.';
+function SignatureBlock({ party, partyNumber }: { party: NDAFormData['party1']; partyNumber: 1 | 2 }) {
+  return (
+    <div className="border border-slate-200 rounded-lg p-4">
+      <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-4 mt-0">
+        Party {partyNumber}
+      </h3>
+      <div className="space-y-3">
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Company</p>
+          <p className="text-slate-800 font-medium">
+            <Placeholder value={party.company} />
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Signature</p>
+          <div className="border-b border-slate-300 h-8"></div>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Print Name</p>
+          <p className="text-slate-800">
+            <Placeholder value={party.name} />
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Title</p>
+          <p className="text-slate-800">
+            <Placeholder value={party.title} />
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Notice Address</p>
+          <p className="text-slate-800">
+            <Placeholder value={party.noticeAddress} />
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-1">Date</p>
+          <p className="text-slate-800">{formatDate(party.date)}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  const confidentialityTerm =
-    formData.confidentialityTermType === 'years'
-      ? `${formData.confidentialityTermYears} year(s) from Effective Date, but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws.`
-      : 'In perpetuity.';
+export function NDAPreview({ formData }: NDAPreviewProps) {
+  const mndaTerm = getMndaTermText(formData);
+  const confidentialityTerm = getConfidentialityTermText(formData);
 
   return (
     <div className="prose prose-slate prose-sm max-w-none">
@@ -94,83 +126,8 @@ export function NDAPreview({ formData }: NDAPreviewProps) {
         </p>
 
         <div className="grid grid-cols-2 gap-8">
-          {/* Party 1 */}
-          <div className="border border-slate-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-4 mt-0">Party 1</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Company</p>
-                <p className="text-slate-800 font-medium">
-                  <Placeholder value={formData.party1.company} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Signature</p>
-                <div className="border-b border-slate-300 h-8"></div>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Print Name</p>
-                <p className="text-slate-800">
-                  <Placeholder value={formData.party1.name} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Title</p>
-                <p className="text-slate-800">
-                  <Placeholder value={formData.party1.title} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Notice Address</p>
-                <p className="text-slate-800">
-                  <Placeholder value={formData.party1.noticeAddress} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Date</p>
-                <p className="text-slate-800">{formatDate(formData.party1.date)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Party 2 */}
-          <div className="border border-slate-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-4 mt-0">Party 2</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Company</p>
-                <p className="text-slate-800 font-medium">
-                  <Placeholder value={formData.party2.company} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Signature</p>
-                <div className="border-b border-slate-300 h-8"></div>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Print Name</p>
-                <p className="text-slate-800">
-                  <Placeholder value={formData.party2.name} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Title</p>
-                <p className="text-slate-800">
-                  <Placeholder value={formData.party2.title} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Notice Address</p>
-                <p className="text-slate-800">
-                  <Placeholder value={formData.party2.noticeAddress} />
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Date</p>
-                <p className="text-slate-800">{formatDate(formData.party2.date)}</p>
-              </div>
-            </div>
-          </div>
+          <SignatureBlock party={formData.party1} partyNumber={1} />
+          <SignatureBlock party={formData.party2} partyNumber={2} />
         </div>
       </div>
 

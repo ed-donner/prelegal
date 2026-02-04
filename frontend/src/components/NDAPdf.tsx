@@ -2,6 +2,7 @@
 
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { NDAFormData } from '@/types/nda';
+import { formatDate, getMndaTermText, getConfidentialityTermText, placeholder } from '@/utils/nda';
 
 const styles = StyleSheet.create({
   page: {
@@ -76,10 +77,6 @@ const styles = StyleSheet.create({
     height: 20,
     marginBottom: 8,
   },
-  placeholder: {
-    color: '#94a3b8',
-    fontStyle: 'italic',
-  },
   termsTitle: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
@@ -113,10 +110,35 @@ const styles = StyleSheet.create({
   },
 });
 
-function formatDate(dateString: string): string {
-  if (!dateString) return '___________';
-  const date = new Date(dateString + 'T00:00:00');
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+interface PartySignatureProps {
+  party: NDAFormData['party1'];
+  partyNumber: 1 | 2;
+}
+
+function PartySignature({ party, partyNumber }: PartySignatureProps) {
+  return (
+    <View style={styles.signatureBox}>
+      <Text style={[styles.sectionTitle, { marginTop: 0 }]}>Party {partyNumber}</Text>
+
+      <Text style={styles.signatureLabel}>Company</Text>
+      <Text style={styles.signatureValue}>{placeholder(party.company)}</Text>
+
+      <Text style={styles.signatureLabel}>Signature</Text>
+      <View style={styles.signatureLine} />
+
+      <Text style={styles.signatureLabel}>Print Name</Text>
+      <Text style={styles.signatureValue}>{placeholder(party.name)}</Text>
+
+      <Text style={styles.signatureLabel}>Title</Text>
+      <Text style={styles.signatureValue}>{placeholder(party.title)}</Text>
+
+      <Text style={styles.signatureLabel}>Notice Address</Text>
+      <Text style={styles.signatureValue}>{placeholder(party.noticeAddress)}</Text>
+
+      <Text style={styles.signatureLabel}>Date</Text>
+      <Text style={styles.signatureValue}>{formatDate(party.date)}</Text>
+    </View>
+  );
 }
 
 interface NDAPdfProps {
@@ -124,18 +146,8 @@ interface NDAPdfProps {
 }
 
 export function NDAPdf({ formData }: NDAPdfProps) {
-  const mndaTerm =
-    formData.mndaTermType === 'expires'
-      ? `Expires ${formData.mndaTermYears} year(s) from Effective Date.`
-      : 'Continues until terminated in accordance with the terms of the MNDA.';
-
-  const confidentialityTerm =
-    formData.confidentialityTermType === 'years'
-      ? `${formData.confidentialityTermYears} year(s) from Effective Date, but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws.`
-      : 'In perpetuity.';
-
-  const placeholder = (value: string, fallback: string = '___________') =>
-    value || fallback;
+  const mndaTerm = getMndaTermText(formData);
+  const confidentialityTerm = getConfidentialityTermText(formData);
 
   return (
     <Document>
@@ -188,67 +200,8 @@ export function NDAPdf({ formData }: NDAPdfProps) {
         {/* Signature Blocks */}
         <View style={styles.signatureSection}>
           <View style={styles.signatureGrid}>
-            {/* Party 1 */}
-            <View style={styles.signatureBox}>
-              <Text style={[styles.sectionTitle, { marginTop: 0 }]}>Party 1</Text>
-
-              <Text style={styles.signatureLabel}>Company</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party1.company)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Signature</Text>
-              <View style={styles.signatureLine} />
-
-              <Text style={styles.signatureLabel}>Print Name</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party1.name)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Title</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party1.title)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Notice Address</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party1.noticeAddress)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Date</Text>
-              <Text style={styles.signatureValue}>{formatDate(formData.party1.date)}</Text>
-            </View>
-
-            {/* Party 2 */}
-            <View style={styles.signatureBox}>
-              <Text style={[styles.sectionTitle, { marginTop: 0 }]}>Party 2</Text>
-
-              <Text style={styles.signatureLabel}>Company</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party2.company)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Signature</Text>
-              <View style={styles.signatureLine} />
-
-              <Text style={styles.signatureLabel}>Print Name</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party2.name)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Title</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party2.title)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Notice Address</Text>
-              <Text style={styles.signatureValue}>
-                {placeholder(formData.party2.noticeAddress)}
-              </Text>
-
-              <Text style={styles.signatureLabel}>Date</Text>
-              <Text style={styles.signatureValue}>{formatDate(formData.party2.date)}</Text>
-            </View>
+            <PartySignature party={formData.party1} partyNumber={1} />
+            <PartySignature party={formData.party2} partyNumber={2} />
           </View>
         </View>
       </Page>
