@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Form input styles */
+.input-field {
+  @apply w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply transition-colors duration-150;
+}
+
+.input-field:hover {
+  @apply border-slate-400;
+}
+
+/* Prose typography adjustments for preview */
+.prose h1 {
+  @apply text-slate-900;
+}
+
+.prose h2 {
+  @apply text-slate-800;
+}
+
+.prose h3 {
+  @apply text-slate-700;
+}
+
+.prose p {
+  @apply text-slate-700;
+}
+
+/* Custom scrollbar for preview panel */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
