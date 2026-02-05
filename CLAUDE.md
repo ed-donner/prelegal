@@ -8,7 +8,7 @@ The available documents are covered in the catalog.json file in the project root
 
 @catalog.json
 
-The current implementation supports the Mutual NDA document with AI chat.
+The current implementation supports all 11 document types via AI chat.
 
 ## Development process
 
@@ -72,6 +72,13 @@ Backend available at http://localhost:8000
 - AI greets user, asks questions conversationally, and confirms when complete
 - Download button appears when all required fields are gathered
 
+### Completed (PL-6)
+- Support for all 11 document types from catalog.json
+- AI detects document type from user requests and routes accordingly
+- Dedicated preview/PDF components for Mutual NDA, Cloud Service Agreement, Pilot Agreement
+- Generic preview/PDF components for remaining document types (Design Partner, SLA, Professional Services, Partnership, Software License, DPA, BAA, AI Addendum)
+- Auto-focus chat input after sending messages
+- AI always asks follow-on questions when more information is needed
+
 ### Not Yet Implemented
 - Functional authentication (currently returns 501/401 placeholders)
-- Support for other document templates beyond Mutual NDA
