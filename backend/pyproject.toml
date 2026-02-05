@@ -9,6 +9,7 @@ dependencies = [
     "sqlalchemy>=2.0.0",
     "python-dotenv>=1.0.0",
     "litellm>=1.55.0",
+    "pydantic>=2.12.5",
 ]
 
 [tool.uv]
