@@ -1,27 +1,37 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { NDAFormData } from '@/types/nda';
-import { ChatMessage, ChatResponse, extractFieldsFromResponse } from '@/types/chat';
+import { DocumentType, DocumentFormData } from '@/types/documents';
+import { ChatMessage, ChatResponse, extractFieldsFromResponse, parseDocumentType } from '@/types/chat';
 import { getGreeting, sendMessage } from '@/services/chatApi';
 
 interface ChatInterfaceProps {
-  formData: NDAFormData;
-  onFieldsExtracted: (fields: Partial<NDAFormData>) => void;
+  formData: DocumentFormData;
+  onDocumentTypeDetected: (type: DocumentType) => void;
+  onFieldsExtracted: (fields: Partial<DocumentFormData>) => void;
   onComplete: () => void;
 }
 
-export function ChatInterface({ formData, onFieldsExtracted, onComplete }: ChatInterfaceProps) {
+export function ChatInterface({ formData, onDocumentTypeDetected, onFieldsExtracted, onComplete }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [documentTypeDetected, setDocumentTypeDetected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-focus input after assistant response (loading finished and messages exist)
+  useEffect(() => {
+    if (!isLoading && messages.length > 0 && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isLoading, messages.length]);
 
   // Get initial greeting on mount
   useEffect(() => {
@@ -55,6 +65,15 @@ export function ChatInterface({ formData, onFieldsExtracted, onComplete }: ChatI
 
       // Add assistant response to messages (use functional update to avoid race conditions)
       setMessages(prev => [...prev, { role: 'assistant', content: response.response }]);
+
+      // Detect document type if not already detected
+      if (!documentTypeDetected && response.documentType) {
+        const docType = parseDocumentType(response.documentType);
+        if (docType) {
+          setDocumentTypeDetected(true);
+          onDocumentTypeDetected(docType);
+        }
+      }
 
       // Extract and update form fields
       const extractedFields = extractFieldsFromResponse(response);
@@ -120,6 +139,7 @@ export function ChatInterface({ formData, onFieldsExtracted, onComplete }: ChatI
       {/* Input area */}
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
