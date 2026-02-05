@@ -8,7 +8,7 @@ The available documents are covered in the catalog.json file in the project root
 
 @catalog.json
 
-The current implementation supports the Mutual NDA document with no AI chat yet.
+The current implementation supports the Mutual NDA document with AI chat.
 
 ## Development process
 
@@ -64,7 +64,14 @@ Backend available at http://localhost:8000
 - Start/stop scripts for Mac, Linux, Windows
 - Mutual NDA form with live preview and PDF download
 
+### Completed (PL-5)
+- AI chat interface replaces manual form for NDA creation
+- Uses LiteLLM via OpenRouter with Cerebras inference (gpt-oss-120b model)
+- Structured outputs for reliable field extraction from conversation
+- Live preview updates as AI extracts fields from chat
+- AI greets user, asks questions conversationally, and confirms when complete
+- Download button appears when all required fields are gathered
+
 ### Not Yet Implemented
 - Functional authentication (currently returns 501/401 placeholders)
-- AI chat for document generation
 - Support for other document templates beyond Mutual NDA
