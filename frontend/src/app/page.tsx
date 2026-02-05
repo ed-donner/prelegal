@@ -1,15 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ChatInterface } from '@/components/ChatInterface';
 import { DocumentPreview } from '@/components/DocumentPreview';
 import { DocumentDownload } from '@/components/DocumentDownload';
-import { DocumentType, DocumentFormData, DOCUMENT_NAMES, getDefaultFormData, MutualNDAData } from '@/types/documents';
+import { AuthModal } from '@/components/AuthModal';
+import { UserMenu } from '@/components/UserMenu';
+import { DocumentsModal } from '@/components/DocumentsModal';
+import { SaveDocumentButton } from '@/components/SaveDocumentButton';
+import { useAuth } from '@/contexts/AuthContext';
+import { DocumentType, DocumentFormData, DOCUMENT_NAMES, getDefaultFormData } from '@/types/documents';
 
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
   const [documentType, setDocumentType] = useState<DocumentType | null>(null);
   const [formData, setFormData] = useState<DocumentFormData>(getDefaultFormData(DocumentType.MUTUAL_NDA));
   const [isComplete, setIsComplete] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+  const [chatKey, setChatKey] = useState(0);
 
   const handleDocumentTypeDetected = (type: DocumentType) => {
     setDocumentType(type);
@@ -43,6 +52,22 @@ export default function Home() {
     };
   }
 
+  // Load a saved document
+  const handleLoadDocument = useCallback((type: DocumentType, data: DocumentFormData) => {
+    setDocumentType(type);
+    setFormData(data);
+    setIsComplete(true);
+    setChatKey((k) => k + 1); // Reset chat interface
+  }, []);
+
+  // Start a new document
+  const handleNewDocument = useCallback(() => {
+    setDocumentType(null);
+    setFormData(getDefaultFormData(DocumentType.MUTUAL_NDA));
+    setIsComplete(false);
+    setChatKey((k) => k + 1);
+  }, []);
+
   // Get dynamic page title based on document type
   const pageTitle = documentType
     ? `${DOCUMENT_NAMES[documentType]} Creator`
@@ -51,6 +76,14 @@ export default function Home() {
   const pageSubtitle = documentType
     ? `Create a professional ${DOCUMENT_NAMES[documentType]} with AI assistance`
     : 'Create professional legal documents with AI assistance';
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -68,7 +101,32 @@ export default function Home() {
               </span>
             )}
           </div>
-          {isComplete && documentType && <DocumentDownload documentType={documentType} formData={formData} />}
+          <div className="flex items-center gap-3">
+            {isComplete && documentType && (
+              <>
+                {user && <SaveDocumentButton documentType={documentType} formData={formData} />}
+                <DocumentDownload documentType={documentType} formData={formData} />
+              </>
+            )}
+            {documentType && (
+              <button
+                onClick={handleNewDocument}
+                className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium transition-colors"
+              >
+                New Document
+              </button>
+            )}
+            {user ? (
+              <UserMenu user={user} onOpenDocuments={() => setShowDocumentsModal(true)} />
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="px-4 py-2 bg-purple-700 text-white rounded-lg font-medium hover:bg-purple-800 transition-colors"
+              >
+                Sign In
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -87,6 +145,7 @@ export default function Home() {
             </div>
             <div className="p-6 h-[calc(100vh-220px)]">
               <ChatInterface
+                key={chatKey}
                 formData={formData}
                 onDocumentTypeDetected={handleDocumentTypeDetected}
                 onFieldsExtracted={handleFieldsExtracted}
@@ -138,6 +197,15 @@ export default function Home() {
           </a>
         </div>
       </footer>
+
+      {/* Modals */}
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      {showDocumentsModal && (
+        <DocumentsModal
+          onClose={() => setShowDocumentsModal(false)}
+          onLoadDocument={handleLoadDocument}
+        />
+      )}
     </div>
   );
 }
