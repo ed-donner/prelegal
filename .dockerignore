@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Node
+frontend/node_modules
+frontend/.next
+
+# Python
+backend/__pycache__
+backend/.venv
+*.pyc
+*.pyo
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+frontend/out
