@@ -80,5 +80,12 @@ Backend available at http://localhost:8000
 - Auto-focus chat input after sending messages
 - AI always asks follow-on questions when more information is needed
 
-### Not Yet Implemented
-- Functional authentication (currently returns 501/401 placeholders)
+### Completed (PL-7)
+- Functional user authentication with JWT tokens in HttpOnly cookies
+- User signup and signin with email/password (bcrypt password hashing)
+- Document persistence - users can save documents to their account
+- My Documents modal to view, load, and delete saved documents
+- User menu with sign out functionality
+- New Document button to start fresh
+- Auth context for managing user state across the app
+- Protected document save/load endpoints

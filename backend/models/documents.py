@@ -84,3 +84,38 @@ def get_document_catalog_text() -> str:
     for doc_type, info in DOCUMENT_CATALOG.items():
         lines.append(f"- {info['name']}: {info['description']}")
     return "\n".join(lines)
+
+
+# API Models for document CRUD operations
+
+
+class DocumentSaveRequest(BaseModel):
+    """Request to save a document."""
+
+    document_type: DocumentType
+    title: str
+    form_data: dict
+
+
+class DocumentUpdateRequest(BaseModel):
+    """Request to update a document."""
+
+    title: str
+    form_data: dict
+
+
+class DocumentResponse(BaseModel):
+    """Document information response."""
+
+    id: int
+    document_type: str
+    title: str
+    form_data: dict
+    created_at: str
+    updated_at: str
+
+
+class DocumentListResponse(BaseModel):
+    """List of user documents."""
+
+    documents: list[DocumentResponse]
