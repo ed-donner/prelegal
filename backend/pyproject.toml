@@ -17,3 +17,16 @@ dependencies = [
 
 [tool.uv]
 package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+    "httpx>=0.27.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ["tests/*", ".venv/*"]
