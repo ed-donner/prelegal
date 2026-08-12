@@ -11,9 +11,10 @@ export function AuthModal({ onClose }: AuthModalProps) {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signin, signup } = useAuth();
+  const { signin, signup, demoLogin } = useAuth();
 
   // Handle Escape key to close modal
   useEffect(() => {
@@ -43,6 +44,20 @@ export function AuthModal({ onClose }: AuthModalProps) {
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      await demoLogin(name || 'Demo User');
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Demo login failed');
     } finally {
       setLoading(false);
     }
@@ -158,6 +173,36 @@ export function AuthModal({ onClose }: AuthModalProps) {
             </>
           )}
         </p>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="flex-1 border-t border-slate-200"></div>
+          <span className="text-sm text-slate-400">or</span>
+          <div className="flex-1 border-t border-slate-200"></div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Your name (optional)
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+            placeholder="e.g. Alex"
+          />
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={loading}
+            className="w-full py-2.5 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Continue as Demo User
+          </button>
+          <p className="mt-2 text-center text-xs text-slate-500">
+            No sign-up required - you&apos;re added to the platform instantly.
+          </p>
+        </div>
       </div>
     </div>
   );

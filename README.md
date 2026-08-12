@@ -76,6 +76,7 @@ prelegal/
 - `GET /api/health` - Health check
 - `POST /api/auth/signup` - Signup (placeholder)
 - `POST /api/auth/signin` - Signin (placeholder)
+- `POST /api/auth/demo` - Fake login, no auth required (adds user to platform)
 - `GET /api/auth/me` - Current user (placeholder)
 
 ## License
