@@ -1,11 +1,19 @@
 """Authentication business logic."""
 
+import hashlib
+import secrets
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from database import User
 from core.security import verify_password, get_password_hash, create_access_token
+
+
+def sanitize_email(name: str) -> str:
+    """Lowercase a name and strip non-alphanumeric chars for demo email derivation."""
+    return hashlib.sha1(name.strip().lower().encode("utf-8")).hexdigest()[:12]
 
 
 class AuthService:
@@ -55,6 +63,26 @@ class AuthService:
 
         if not password_valid:
             raise HTTPException(status_code=401, detail="Invalid email or password")
+
+        token = create_access_token(user.id, user.email)
+        return user, token
+
+    def demo_login(self, name: str = "Demo User") -> tuple[User, str]:
+        """
+        Fake login with no authentication.
+        Creates a demo user on the platform and returns an access token.
+        Returns: (user, token)
+        """
+        email = f"demo.{sanitize_email(name)}@prelegal.local"
+        user = self.db.query(User).filter(User.email == email).first()
+
+        if not user:
+            # Demo users have no real password - hash of random string, never verified
+            hashed_password = get_password_hash(secrets.token_hex(16))
+            user = User(email=email, hashed_password=hashed_password)
+            self.db.add(user)
+            self.db.commit()
+            self.db.refresh(user)
 
         token = create_access_token(user.id, user.email)
         return user, token

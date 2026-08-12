@@ -94,6 +94,7 @@ Backend available at http://localhost:8000
 - `POST /api/auth/signup` - Create new user account
 - `POST /api/auth/signin` - Sign in and receive JWT cookie
 - `POST /api/auth/signout` - Clear auth cookie
+- `POST /api/auth/demo` - Fake login (no auth required) adding user to platform
 - `GET /api/auth/me` - Get current user info
 - `GET /api/documents` - List user's saved documents (auth required)
 - `POST /api/documents` - Save new document (auth required)

@@ -17,6 +17,12 @@ class SigninRequest(BaseModel):
     password: str
 
 
+class DemoLoginRequest(BaseModel):
+    """Fake login request body. No authentication required."""
+
+    name: str = "Demo User"
+
+
 class UserResponse(BaseModel):
     """User information response."""
 

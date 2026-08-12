@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
 from database import get_db, User
-from models.auth import SignupRequest, SigninRequest, UserResponse, AuthResponse
+from models.auth import (
+    SignupRequest,
+    SigninRequest,
+    DemoLoginRequest,
+    UserResponse,
+    AuthResponse,
+)
 from services.auth_service import AuthService
 from core.dependencies import get_current_user
 
@@ -52,6 +58,27 @@ async def signin(request: SigninRequest, response: Response, db: Session = Depen
     return AuthResponse(
         user=UserResponse.model_validate(user),
         message="Signed in successfully",
+    )
+
+
+@router.post("/demo", response_model=AuthResponse)
+async def demo_login(request: DemoLoginRequest, response: Response, db: Session = Depends(get_db)):
+    """Fake login with no authentication - adds the user to the platform."""
+    auth_service = AuthService(db)
+    user, token = auth_service.demo_login(request.name)
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False,  # Set to True in production with HTTPS
+        samesite="lax",
+        max_age=COOKIE_MAX_AGE,
+    )
+
+    return AuthResponse(
+        user=UserResponse.model_validate(user),
+        message="Signed in as demo user",
     )
 
 
