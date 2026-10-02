@@ -2,79 +2,49 @@
 
 import { useState } from 'react';
 import { pdf } from '@react-pdf/renderer';
-import { DocumentType, DocumentFormData, DOCUMENT_NAMES, MutualNDAData, PilotData, CloudServiceData } from '@/types/documents';
-import { NDAPdf } from './NDAPdf';
-import { PilotPdf } from './PilotPdf';
-import { CloudServicePdf } from './CloudServicePdf';
-import { GenericPdf } from './GenericPdf';
-import { NDAFormData } from '@/types/nda';
+import { DocumentType, DocumentFormData } from '@/types/documents';
+import { buildPdfDocument, generateDocumentFilename } from '@/utils/documentPdf';
 
 interface DocumentDownloadProps {
-  documentType: DocumentType;
+  documentType: DocumentType | null;
   formData: DocumentFormData;
+  disabled?: boolean;
+  disabledReason?: string;
+  size?: 'sm' | 'md';
 }
 
-function sanitizeFilename(str: string): string {
-  return str.replace(/[^a-zA-Z0-9-]/g, '_').substring(0, 50);
-}
+const SIZE_CLASSES = {
+  sm: 'px-4 py-2',
+  md: 'px-6 py-3',
+};
 
-function generateFilename(documentType: DocumentType, formData: DocumentFormData): string {
-  const docName = DOCUMENT_NAMES[documentType].replace(/\s+/g, '-');
-  const party1Name = sanitizeFilename(formData.party1.company || 'Party1');
-  const party2Name = sanitizeFilename(formData.party2.company || 'Party2');
-  const date = formData.effectiveDate || new Date().toISOString().split('T')[0];
-  return `${docName}_${party1Name}_${party2Name}_${date}.pdf`;
-}
-
-export function DocumentDownload({ documentType, formData }: DocumentDownloadProps) {
+export function DocumentDownload({
+  documentType,
+  formData,
+  disabled = false,
+  disabledReason,
+  size = 'md',
+}: DocumentDownloadProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isDisabled = disabled || !documentType || isGenerating;
+
   const handleDownload = async () => {
+    if (!documentType) return;
+
     setIsGenerating(true);
     setError(null);
 
     let url: string | null = null;
 
     try {
-      let pdfComponent;
-
-      switch (documentType) {
-        case DocumentType.MUTUAL_NDA:
-          // Convert to NDAFormData format for backward compatibility
-          const ndaData = formData as MutualNDAData;
-          const ndaFormData: NDAFormData = {
-            purpose: ndaData.purpose,
-            effectiveDate: ndaData.effectiveDate,
-            mndaTermType: ndaData.mndaTermType,
-            mndaTermYears: ndaData.mndaTermYears,
-            confidentialityTermType: ndaData.confidentialityTermType,
-            confidentialityTermYears: ndaData.confidentialityTermYears,
-            governingLaw: ndaData.governingLaw,
-            jurisdiction: ndaData.jurisdiction,
-            modifications: ndaData.modifications,
-            party1: ndaData.party1,
-            party2: ndaData.party2,
-          };
-          pdfComponent = <NDAPdf formData={ndaFormData} />;
-          break;
-        case DocumentType.PILOT:
-          pdfComponent = <PilotPdf formData={formData as PilotData} />;
-          break;
-        case DocumentType.CLOUD_SERVICE:
-          pdfComponent = <CloudServicePdf formData={formData as CloudServiceData} />;
-          break;
-        default:
-          pdfComponent = <GenericPdf documentType={documentType} formData={formData} />;
-          break;
-      }
-
-      const blob = await pdf(pdfComponent).toBlob();
+      const blob = await pdf(buildPdfDocument(documentType, formData)).toBlob();
       url = URL.createObjectURL(blob);
 
       const link = document.createElement('a');
       link.href = url;
-      link.download = generateFilename(documentType, formData);
+      link.download = generateDocumentFilename(documentType, formData);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -90,13 +60,14 @@ export function DocumentDownload({ documentType, formData }: DocumentDownloadPro
   };
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div className="relative flex flex-col items-end">
       <button
         type="button"
         onClick={handleDownload}
-        disabled={isGenerating}
+        disabled={isDisabled}
         aria-busy={isGenerating}
-        className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed shadow-sm"
+        title={isDisabled && !isGenerating ? disabledReason : undefined}
+        className={`flex items-center justify-center gap-2 ${SIZE_CLASSES[size]} bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed shadow-sm`}
       >
         {isGenerating ? (
           <>
@@ -133,7 +104,7 @@ export function DocumentDownload({ documentType, formData }: DocumentDownloadPro
         )}
       </button>
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="absolute top-full mt-1 whitespace-nowrap text-sm text-red-600" role="alert">
           {error}
         </p>
       )}

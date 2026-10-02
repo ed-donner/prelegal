@@ -90,6 +90,12 @@ Backend available at http://localhost:8000
 - Auth context for managing user state across the app
 - Protected document save/load endpoints
 
+### Completed (SCRUM-2)
+- Header Download PDF button sits directly left of the profile / Sign In button
+- Header download is always visible but disabled (with tooltip) until the document is complete
+- Additional Download PDF button in the AI Assistant chat panel once the document is complete
+- PDF building and filename logic extracted to `frontend/src/utils/documentPdf.tsx`
+
 ### Current API Endpoints
 - `POST /api/auth/signup` - Create new user account
 - `POST /api/auth/signin` - Sign in and receive JWT cookie

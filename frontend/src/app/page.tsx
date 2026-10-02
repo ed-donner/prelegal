@@ -68,6 +68,8 @@ export default function Home() {
     setChatKey((k) => k + 1);
   }, []);
 
+  const isDownloadReady = isComplete && documentType !== null;
+
   // Get dynamic page title based on document type
   const pageTitle = documentType
     ? `${DOCUMENT_NAMES[documentType]} Creator`
@@ -102,11 +104,8 @@ export default function Home() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            {isComplete && documentType && (
-              <>
-                {user && <SaveDocumentButton documentType={documentType} formData={formData} />}
-                <DocumentDownload documentType={documentType} formData={formData} />
-              </>
+            {isComplete && documentType && user && (
+              <SaveDocumentButton documentType={documentType} formData={formData} />
             )}
             {documentType && (
               <button
@@ -116,6 +115,14 @@ export default function Home() {
                 New Document
               </button>
             )}
+            {/* Download sits directly left of the profile button; enabled once the document is ready */}
+            <DocumentDownload
+              documentType={documentType}
+              formData={formData}
+              disabled={!isDownloadReady}
+              disabledReason="Finish the chat to download your document"
+              size="sm"
+            />
             {user ? (
               <UserMenu user={user} onOpenDocuments={() => setShowDocumentsModal(true)} />
             ) : (
@@ -135,13 +142,18 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Chat Panel */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-semibold text-slate-800">AI Assistant</h2>
-              <p className="text-sm text-slate-500">
-                {documentType
-                  ? `Creating your ${DOCUMENT_NAMES[documentType]}`
-                  : 'Tell me what document you need'}
-              </p>
+            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-800">AI Assistant</h2>
+                <p className="text-sm text-slate-500">
+                  {documentType
+                    ? `Creating your ${DOCUMENT_NAMES[documentType]}`
+                    : 'Tell me what document you need'}
+                </p>
+              </div>
+              {isDownloadReady && (
+                <DocumentDownload documentType={documentType} formData={formData} size="sm" />
+              )}
             </div>
             <div className="p-6 h-[calc(100vh-220px)]">
               <ChatInterface
